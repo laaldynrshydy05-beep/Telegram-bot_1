@@ -5,31 +5,13 @@ from pathlib import Path
 from flask import Flask, request, jsonify, send_file
 from werkzeug.utils import secure_filename
 
-=========================
-
-تنظیمات اولیه
-
-=========================
-
 APP = Flask(name)
 APP.config['UPLOAD_FOLDER'] = 'storage'
 APP.config['ALLOWED_EXTENSIONS'] = {'mp3', 'wav', 'txt', 'json', 'jpg', 'png'}
 
 Path(APP.config['UPLOAD_FOLDER']).mkdir(parents=True, exist_ok=True)
 
-=========================
-
-متغیرهای محیطی
-
-=========================
-
 BOT_TOKEN = os.getenv('BOT_TOKEN', 'dummy-token')
-
-=========================
-
-توابع کمکی
-
-=========================
 
 def allowed_file(filename: str) -> bool:
 return '.' in filename and filename.rsplit('.', 1)[1].lower() in APP.config['ALLOWED_EXTENSIONS']
@@ -53,12 +35,6 @@ path.parent.mkdir(parents=True, exist_ok=True)
 with open(path, 'w', encoding='utf-8') as f:
 json.dump(data, f, ensure_ascii=False, indent=4)
 
-=========================
-
-مدیریت کاربران / پروفایل
-
-=========================
-
 PROFILE_PATH = Path(APP.config['UPLOAD_FOLDER']) / 'profiles.json'
 profiles = load_json(PROFILE_PATH)
 
@@ -77,12 +53,6 @@ return jsonify({'error': 'No data provided'}), 400
 profiles[user_id] = data
 save_json(PROFILE_PATH, profiles)
 return jsonify({'status': 'Profile updated'})
-
-=========================
-
-مدیریت آهنگ‌ها
-
-=========================
 
 TRACKS_PATH = Path(APP.config['UPLOAD_FOLDER']) / 'tracks.json'
 tracks = load_json(TRACKS_PATH)
@@ -115,12 +85,6 @@ query = request.args.get('q', '').lower()
 results = {tid: t for tid, t in tracks.items() if query in t['name'].lower()}
 return jsonify(results)
 
-=========================
-
-مدیریت ادیت‌ها
-
-=========================
-
 EDITS_PATH = Path(APP.config['UPLOAD_FOLDER']) / 'edits.json'
 edits = load_json(EDITS_PATH)
 
@@ -147,12 +111,6 @@ query = request.args.get('q', '').lower()
 results = {eid: e for eid, e in edits.items() if query in str(e).lower()}
 return jsonify(results)
 
-=========================
-
-مدیریت فایل‌ها (عمومی)
-
-=========================
-
 @APP.route('/file/list/<folder>', methods=['GET'])
 def list_files(folder):
 folder_path = Path(APP.config['UPLOAD_FOLDER']) / folder
@@ -168,21 +126,9 @@ if not file_path.exists():
 return jsonify({'error': 'File not found'}), 404
 return send_file(file_path, as_attachment=True)
 
-=========================
-
-Endpoint تست سلامت
-
-=========================
-
 @APP.route('/health', methods=['GET'])
 def health_check():
 return jsonify({'status': 'ok', 'bot_token': BOT_TOKEN})
-
-=========================
-
-اجرای برنامه
-
-=========================
 
 if name == 'main':
 APP.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
